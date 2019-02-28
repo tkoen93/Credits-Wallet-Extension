@@ -9,25 +9,23 @@ let returnmessage;
 let monitorUrl = 'https://monitor.credits.com/testnet-r4/';
 
 
-$(document).ready(function(){
+$(document).ready(function(){ // Function gets executed on page load.
 
-	//$('[data-toggle="popover"]').popover({html: true, trigger: "hover"});
+	$('[data-toggle="popover"]').popover({html: true, trigger: "hover"}); // Initiate bootstrap popover
 
-	$('[data-toggle="popover"]').popover({html: true, trigger: "hover"});
-
-	chrome.storage.local.get(function(result) {
+	chrome.storage.local.get(function(result) { // Get node and keys from local storage
 		 nodeIP = result.ip;
 		 nodePORT = result.port;
 		 keyPublic = result.PublicKey;
 		 keyPrivate = result.PrivateKey;
 
-			 if(result.PrivateKey == null || (keyPrivate.length < 87 || keyPrivate.length > 89)) {
+			 if(result.PrivateKey == null || (keyPrivate.length < 87 || keyPrivate.length > 89)) { // If there is no key or key is incorrect length, forward to login form
 					 $('#extensionlogin').show();
 				 } else {
 					 if(result.PrivateKey.length == 152) {
 						 $('#extensionlogin').show();
 					 } else {
-					 	loadTxscreen(result.PublicKey, 0);
+					 	loadTxscreen(result.PublicKey, 0); // Load tx screen
 				 	}
 				 }
 
@@ -42,7 +40,7 @@ $(document).ready(function(){
 
 });
 
-$(document).on('click', '#logout', function(event){
+$(document).on('click', '#logout', function(event){ // On logging out reset storage
 	chrome.storage.local.clear(function() {
 	    var error = chrome.runtime.lastError;
 	    if (error) {
@@ -121,7 +119,7 @@ $(document).on('click', '#login', function(event){ // Process login attempt.
 			$('#openwallet').show();
 
 		} else {
-			chrome.storage.local.set({
+			chrome.storage.local.set({ // Setup storage
 	  		'PublicKey': pubkey,
 	  		'PrivateKey': prikey,
 	  		'ip': ip,
@@ -166,7 +164,7 @@ function DownloadFile(filename, text) { // Download keyfile upon generating a ne
   document.body.removeChild(element);
 }
 
-$(document).on('click', '#openwal', function(event){
+$(document).on('click', '#openwal', function(event){ // Open wallet function
 	pass = $('#unlockpass').val();
 	$('#unlockerror').empty();
 	$('#unlockerror').removeClass();
@@ -208,13 +206,12 @@ $(document).on('click', '#openwal', function(event){
 
 });
 
-$(document).on('click', '#genkey', function(event){
-
+$(document).on('click', '#genkey', function(event){ // Upon generating new wallet, show screen for new wallet.
 	$('#extensionlogin').hide();
 	$('#newwallet').show();
 });
 
-$(document).on('click', '#generate', function(event){
+$(document).on('click', '#generate', function(event){ // Setting up new wallet
 	$('#generror').empty();
 	$('#generror').removeClass();
 	pass1 = $('#pass1').val();
@@ -246,17 +243,17 @@ $(document).on('click', '#generate', function(event){
 		$('#generror').addClass("alert alert-danger");
 	}
 
-	if(cont) {
+	if(cont) { // When no errors are found continue
 
-		let signPair = nacl.sign.keyPair();
-	  let PublicKey = Base58.encode(signPair.publicKey);
-	 	let PrivateKey = Base58.encode(signPair.secretKey);
+		let signPair = nacl.sign.keyPair(); // Generate keys
+	  let PublicKey = Base58.encode(signPair.publicKey); // public key
+	 	let PrivateKey = Base58.encode(signPair.secretKey); // private key
 
 
-			encrypPublic = encrypt(PublicKey, pass1);
-			encrypPrivate = encrypt(PrivateKey, pass1);
+			encrypPublic = encrypt(PublicKey, pass1); // Encrypt public key with password
+			encrypPrivate = encrypt(PrivateKey, pass1); // Encrypt private key with password
 
-	  let str = {
+	  let str = { // Create json object
 	    		key: {
 	          public: encrypPublic,
 	          private: encrypPrivate
@@ -264,7 +261,7 @@ $(document).on('click', '#generate', function(event){
 	  };
 
 		fileName = 'WalletCS ' + new Date() + '.json';
-	  DownloadFile(fileName, JSON.stringify(str));
+	  DownloadFile(fileName, JSON.stringify(str)); // Download key as a .json file
 
 		$('#error').html("<a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a> Wallet succesfully created.");
 		$('#error').addClass("alert alert-success alert-dismissible");
@@ -367,7 +364,7 @@ function manualFileSelect(evt) { // Manual selection of keyfile
 
 }
 
-$(document).on('click', '#refreshBalance', function(event){
+$(document).on('click', '#refreshBalance', function(event){ // Refresh balances calls the walletbalance() function
 	walletBalance(keyPublic);
 });
 
@@ -395,7 +392,7 @@ $(document).on('click', '#txhistory', function(event){
 
 });
 
-$(document).on('click', '#exportkeyfile', function(event){
+$(document).on('click', '#exportkeyfile', function(event){ // Export raw keyfile without encrypted keys (not recommended, but possible in this version)
 
 	let str = {
 				key: {
@@ -410,7 +407,7 @@ $(document).on('click', '#exportkeyfile', function(event){
 });
 
 
-function getTransactions(key) {
+function getTransactions(key) { // Get transaction history
 
 			Connect().TransactionsGet(Base58.decode(key), 0, 10, function (r) {
 				console.log(r);
@@ -458,7 +455,7 @@ function getTransactions(key) {
 
 }
 
-function convertToHex(str) {
+function convertToHex(str) { // Convert poolhash
     var hex = '';
     for(var i=0;i<str.length;i++) {
 			digits = str.charCodeAt(i).toString(16).length;
@@ -480,7 +477,7 @@ function byte_array(s) { // Function to show contract addresses in a readable wa
     return arr;
 }
 
-$(document).on('click', '#copy', function(event){
+$(document).on('click', '#copy', function(event){ // Copy public key
 		let $temp = $("<input>");
 	  $("body").append($temp);
 	  $temp.val(keyPublic).select();
@@ -488,7 +485,7 @@ $(document).on('click', '#copy', function(event){
 	  $temp.remove();
 });
 
-$(document).on('click', '#createTX', function(event){
+$(document).on('click', '#createTX', function(event){ // Create transaction
 
 	$('input[type="text"]').css({"border" : "", "box-shadow" : ""});
 	$('#txerror').empty();
@@ -556,7 +553,7 @@ $(document).on('click', '#createTX', function(event){
 
 });
 
-$(document).on('click', '#sendTX', function(event){
+$(document).on('click', '#sendTX', function(event){ // Send transaction
 
 	$('#txerror').empty();
 	$('#txerror').removeClass();
@@ -629,7 +626,6 @@ $('#balance').html('<img src="../img/loader.svg" width="20" height="20">');
 }
 
 function Connect() { // Connect to node via apache thrift
-	  //let transport = new Thrift.Transport("http://" + nodeIP + ":" + nodePORT + "/thrift/service/Api/");
 		let transport;
 		try {
 			transport = new Thrift.Transport("http://" + nodeIP + ":" + nodePORT + "/thrift/service/Api/");
@@ -687,77 +683,4 @@ function decrypt (transitmessage, pass) {
 	}
 
 return decrypted;
-}
-
-
-function Myconnect() {
-
-    Thrift.TXHRTransport.prototype.flush = function (async, callback) {
-        var self = this;
-        if ((async && !callback) || this.url === undefined || this.url === '') {
-            return this.send_buf;
-        }
-
-        var xreq = this.getXmlHttpRequestObject();
-
-        if (xreq.overrideMimeType) {
-            xreq.overrideMimeType('application/vnd.apache.thrift.json; charset=utf-8');
-        }
-
-        if (callback) {
-            xreq.onreadystatechange =
-                (function () {
-                    var clientCallback = callback;
-                    return function () {
-                        if (this.readyState === 4 && this.status === 200) {
-                            self.setRecvBuffer(this.responseText);
-                            clientCallback();
-                        }
-                    };
-                }());
-
-            xreq.onerror =
-                (function () {
-                    var clientCallback = callback;
-                    return function () {
-                        clientCallback();
-                    };
-                }());
-
-        }
-
-        xreq.open('POST', this.url, !!async);
-
-        Object.keys(self.customHeaders).forEach(function (prop) {
-            xreq.setRequestHeader(prop, self.customHeaders[prop]);
-        });
-
-        if (xreq.setRequestHeader) {
-            xreq.setRequestHeader('Accept', 'application/vnd.apache.thrift.json; charset=utf-8');
-            xreq.setRequestHeader('Content-Type', 'application/vnd.apache.thrift.json; charset=utf-8');
-        }
-
-        try {
-            xreq.send(this.send_buf);
-        } catch (Ex) {
-            alert("Node update");
-            return;
-        }
-        if (async && callback) {
-            return;
-        }
-
-        if (xreq.readyState !== 4) {
-            throw 'encountered an unknown ajax ready state: ' + xreq.readyState;
-        }
-
-        if (xreq.status !== 200) {
-            throw 'encountered a unknown request status: ' + xreq.status;
-        }
-
-        this.recv_buf = xreq.responseText;
-        this.recv_buf_sz = this.recv_buf.length;
-        this.wpos = this.recv_buf.length;
-        this.rpos = 0;
-    };
 }
